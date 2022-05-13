@@ -1,0 +1,69 @@
+{"seq": 1, "connections": [
+        {"name": "smart`", "type": "S7", "dataPoints": [
+                {"name": "default", "topic": "ie/d/j/simatic/v1/s7c1/dp/r/smart`/default", "publishType": "bulk", "dataPointDefinitions": [
+                        {"name": "SoilTemp", "id": "101", "dataType": "Real"
+                        },
+                        {"name": "Illumination", "id": "102", "dataType": "DInt"
+                        },
+                        {"name": "AirTemp", "id": "103", "dataType": "Real"
+                        },
+                        {"name": "SoilHumi", "id": "104", "dataType": "Real"
+                        },
+                        {"name": "CO2", "id": "105", "dataType": "DInt"
+                        },
+                        {"name": "AirHumidity", "id": "106", "dataType": "Real"
+                        },
+                        {"name": "Auto_Manu", "id": "107", "dataType": "Bool"
+                        },
+                        {"name": "Heating", "id": "108", "dataType": "Bool"
+                        },
+                        {"name": "Pump", "id": "109", "dataType": "Bool"
+                        },
+                        {"name": "Fan", "id": "110", "dataType": "Bool"
+                        },
+                        {"name": "RedLight", "id": "111", "dataType": "Bool"
+                        },
+                        {"name": "BlueLight", "id": "112", "dataType": "Bool"
+                        },
+                        {"name": "WhiteLight", "id": "113", "dataType": "Bool"
+                        },
+                        {"name": "FanManu", "id": "114", "dataType": "Bool"
+                        },
+                        {"name": "WhiteLightManu", "id": "115", "dataType": "Bool"
+                        },
+                        {"name": "RedLightManu", "id": "116", "dataType": "Bool"
+                        },
+                        {"name": "PumpManu", "id": "117", "dataType": "Bool"
+                        },
+                        {"name": "HeatingManu", "id": "118", "dataType": "Bool"
+                        },
+                        {"name": "DAY", "id": "119", "dataType": "Byte"
+                        },
+                        {"name": "BlueLightManu", "id": "120", "dataType": "Bool"
+                        },
+                        {"name": "Month", "id": "121", "dataType": "Byte"
+                        },
+                        {"name": "Year", "id": "122", "dataType": "Int"
+                        },
+                        {"name": "AutoLightTime", "id": "123", "dataType": "Real"
+                        },
+                        {"name": "LongDay", "id": "124", "dataType": "Bool"
+                        },
+                        {"name": "ShortDay", "id": "125", "dataType": "Bool"
+                        },
+                        {"name": "LightManualStop", "id": "126", "dataType": "Bool"
+                        },
+                        {"name": "LightTime", "id": "127", "dataType": "Real"
+                        },
+                        {"name": "LightHalfAuto", "id": "128", "dataType": "Bool"
+                        },
+                        {"name": "AgeDays", "id": "129", "dataType": "Int"
+                        },
+                        {"name": "SetAgeStart", "id": "130", "dataType": "Bool"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
