@@ -1,0 +1,3480 @@
+Parameters:
+  smartFarmTopic:
+    Type: String
+    Default: smartfarm
+    Description: The MQTT topic for IoT Devices.
+  portalContactEmail:
+    Type: String
+    Default: xxx@amazon.com
+    Description: IoT sitewise portal contact email
+  thingName:
+    Type: String
+    Default: SiemensSmartFarmDemo
+    Description: The name of the thing which will be created.
+Resources:
+  IoTSiteWiseAccessForIoTEventsroleB6775CBC:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - iot.amazonaws.com
+                - iotevents.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: SiemensStack/IoTSiteWiseAccessForIoTEvents-role-/Resource
+  IoTSiteWiseAccessForIoTEventsroleDefaultPolicy5B01D378:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - firehose:PutRecord
+              - firehose:PutRecordBatch
+              - iot:Publish
+              - iotevents:BatchPutMessage
+              - iotsitewise:BatchPutAssetPropertyValue
+              - lambda:InvokeFunction
+              - sns:Publish
+              - sqs:SendMessage
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: IoTSiteWiseAccessForIoTEventsroleDefaultPolicy5B01D378
+      Roles:
+        - Ref: IoTSiteWiseAccessForIoTEventsroleB6775CBC
+    Metadata:
+      aws:cdk:path: SiemensStack/IoTSiteWiseAccessForIoTEvents-role-/DefaultPolicy/Resource
+  sensorsWithDataTypeDouble:
+    Type: AWS::IoTSiteWise::AssetModel
+    Properties:
+      AssetModelName: Siemens Sensors With Datatype Double Demo-LJbQpihcaa0O
+      AssetModelDescription: Sensors With Datatype Double
+      AssetModelProperties:
+        - DataType: STRING
+          LogicalId: sensorAttribute
+          Name: sensor
+          Type:
+            Attribute:
+              DefaultValue: sensor
+            TypeName: Attribute
+        - DataType: DOUBLE
+          LogicalId: soilTempNormal
+          Name: SoilTempNormal
+          Type:
+            Attribute:
+              DefaultValue: "25"
+            TypeName: Attribute
+        - DataType: DOUBLE
+          LogicalId: soilHumiNormal
+          Name: SoilHumiNormal
+          Type:
+            Attribute:
+              DefaultValue: "15"
+            TypeName: Attribute
+        - DataType: STRING
+          LogicalId: sensorMeasurementId
+          Name: id
+          Type:
+            TypeName: Measurement
+        - DataType: INTEGER
+          LogicalId: sensorMeasurementQc
+          Name: qc
+          Type:
+            TypeName: Measurement
+        - DataType: DOUBLE
+          LogicalId: sensorMeasurementVal
+          Name: val
+          Type:
+            TypeName: Measurement
+        - DataType: DOUBLE
+          LogicalId: sensorMetricMaxVal
+          Name: Max Val
+          Type:
+            Metric:
+              Expression: max(val)
+              Variables:
+                - Name: val
+                  Value:
+                    PropertyLogicalId: sensorMeasurementVal
+              Window:
+                Tumbling:
+                  Interval: 1m
+            TypeName: Metric
+        - DataType: DOUBLE
+          LogicalId: sensorMetricMinVal
+          Name: Min Val
+          Type:
+            Metric:
+              Expression: min(val)
+              Variables:
+                - Name: val
+                  Value:
+                    PropertyLogicalId: sensorMeasurementVal
+              Window:
+                Tumbling:
+                  Interval: 1m
+            TypeName: Metric
+        - DataType: DOUBLE
+          LogicalId: sensorMetricAvgVal
+          Name: AVG Val
+          Type:
+            Metric:
+              Expression: avg(val)
+              Variables:
+                - Name: val
+                  Value:
+                    PropertyLogicalId: sensorMeasurementVal
+              Window:
+                Tumbling:
+                  Interval: 1m
+            TypeName: Metric
+    Metadata:
+      aws:cdk:path: SiemensStack/sensorsWithDataTypeDouble
+  sensorsWithDataTypeInteger:
+    Type: AWS::IoTSiteWise::AssetModel
+    Properties:
+      AssetModelName: Siemens Sensors With Datatype Integer Demo-LJbQpihcaa0O
+      AssetModelDescription: Sensors With Datatype Integer
+      AssetModelProperties:
+        - DataType: STRING
+          LogicalId: sensorAttribute
+          Name: sensor
+          Type:
+            Attribute:
+              DefaultValue: sensor
+            TypeName: Attribute
+        - DataType: STRING
+          LogicalId: sensorMeasurementId
+          Name: id
+          Type:
+            TypeName: Measurement
+        - DataType: INTEGER
+          LogicalId: sensorMeasurementQc
+          Name: qc
+          Type:
+            TypeName: Measurement
+        - DataType: INTEGER
+          LogicalId: sensorMeasurementVal
+          Name: val
+          Type:
+            TypeName: Measurement
+    Metadata:
+      aws:cdk:path: SiemensStack/sensorsWithDataTypeInteger
+  sensorsWithDataTypeBoolean:
+    Type: AWS::IoTSiteWise::AssetModel
+    Properties:
+      AssetModelName: Siemens Sensors With Datatype Boolean Demo-LJbQpihcaa0O
+      AssetModelDescription: Sensors With Datatype Boolean
+      AssetModelProperties:
+        - DataType: STRING
+          LogicalId: sensorAttribute
+          Name: sensor
+          Type:
+            Attribute:
+              DefaultValue: sensor
+            TypeName: Attribute
+        - DataType: STRING
+          LogicalId: sensorMeasurementId
+          Name: id
+          Type:
+            TypeName: Measurement
+        - DataType: INTEGER
+          LogicalId: sensorMeasurementQc
+          Name: qc
+          Type:
+            TypeName: Measurement
+        - DataType: BOOLEAN
+          LogicalId: sensorMeasurementVal
+          Name: val
+          Type:
+            TypeName: Measurement
+    Metadata:
+      aws:cdk:path: SiemensStack/sensorsWithDataTypeBoolean
+  smartFarmModel:
+    Type: AWS::IoTSiteWise::AssetModel
+    Properties:
+      AssetModelName: Smart Farm Demo-LJbQpihcaa0O
+      AssetModelDescription: Smart Farm Logic layer without a specific measurement.
+      AssetModelHierarchies:
+        - ChildAssetModelId:
+            Fn::GetAtt:
+              - sensorsWithDataTypeBoolean
+              - AssetModelId
+          LogicalId: modelBooleanId
+          Name: Sensors-Bool
+        - ChildAssetModelId:
+            Fn::GetAtt:
+              - sensorsWithDataTypeDouble
+              - AssetModelId
+          LogicalId: modelDoubleId
+          Name: Sensors-Double
+        - ChildAssetModelId:
+            Fn::GetAtt:
+              - sensorsWithDataTypeInteger
+              - AssetModelId
+          LogicalId: modelIntegerId
+          Name: Sensors-Int
+    Metadata:
+      aws:cdk:path: SiemensStack/smartFarmModel
+  soilTempAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeDouble
+          - AssetModelId
+      AssetName: SoilTemp Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/SoilTemp/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/SoilTemp/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/SoilTemp/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/soilTempAsset
+  autoLightTimeAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeDouble
+          - AssetModelId
+      AssetName: AutoLightTime Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/AutoLightTime/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/AutoLightTime/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/AutoLightTime/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/autoLightTimeAsset
+  lightTimeAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeDouble
+          - AssetModelId
+      AssetName: LightTime Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/LightTime/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/LightTime/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/LightTime/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/lightTimeAsset
+  airHumidityAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeDouble
+          - AssetModelId
+      AssetName: AirHumidity Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/AirHumidity/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/AirHumidity/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/AirHumidity/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/airHumidityAsset
+  soilHumiAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeDouble
+          - AssetModelId
+      AssetName: SoilHumi Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/SoilHumi/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/SoilHumi/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/SoilHumi/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/soilHumiAsset
+  airTempAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeDouble
+          - AssetModelId
+      AssetName: AirTemp Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/AirTemp/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/AirTemp/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/AirTemp/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/airTempAsset
+  pumpManuAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: PumpManu Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/PumpManu/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/PumpManu/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/PumpManu/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/pumpManuAsset
+  pumpAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: Pump Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/Pump/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/Pump/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/Pump/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/pumpAsset
+  whiteLightAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: WhiteLight Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/WhiteLight/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/WhiteLight/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/WhiteLight/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/whiteLightAsset
+  heatingManuAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: HeatingManu Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/HeatingManu/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/HeatingManu/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/HeatingManu/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/heatingManuAsset
+  heatingAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: Heating Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/Heating/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/Heating/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/Heating/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/heatingAsset
+  fanManuAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: FanManu Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/FanManu/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/FanManu/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/FanManu/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/fanManuAsset
+  blueLightManuAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: BlueLightManu Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/BlueLightManu/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/BlueLightManu/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/BlueLightManu/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/blueLightManuAsset
+  blueLightAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: BlueLight Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/BlueLight/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/BlueLight/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/BlueLight/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/blueLightAsset
+  longDayAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: LongDay Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/LongDay/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/LongDay/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/LongDay/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/longDayAsset
+  fanAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: Fan Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/Fan/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/Fan/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/Fan/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/fanAsset
+  redLightManuAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: RedLightManu Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/RedLightManu/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/RedLightManu/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/RedLightManu/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/redLightManuAsset
+  redLightAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: RedLight Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: ///RedLight/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/RedLight/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/RedLight/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/redLightAsset
+  shortDayAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: ShortDay Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/ShortDay/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/ShortDay/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/ShortDay/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/shortDayAsset
+  whiteLightManuAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: WhiteLightManu Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/WhiteLightManu/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/WhiteLightManu/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/WhiteLightManu/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/whiteLightManuAsset
+  lightHalfAutoAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: LightHalfAuto Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/LightHalfAuto/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/LightHalfAuto/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/LightHalfAuto/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/lightHalfAutoAsset
+  lightManualStopAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: LightManualStop Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/LightManualStop/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/LightManualStop/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/LightManualStop/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/lightManualStopAsset
+  setAgeStartAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeBoolean
+          - AssetModelId
+      AssetName: SetAgeStart Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/SetAgeStart/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/SetAgeStart/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/SetAgeStart/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/setAgeStartAsset
+  yearAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeInteger
+          - AssetModelId
+      AssetName: Year Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/Year/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/Year/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/Year/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/yearAsset
+  monthAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeInteger
+          - AssetModelId
+      AssetName: Month Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/Month/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/Month/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/Month/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/monthAsset
+  dayAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeInteger
+          - AssetModelId
+      AssetName: DAY Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/DAY/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/DAY/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/DAY/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/dayAsset
+  ageDaysAsset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeInteger
+          - AssetModelId
+      AssetName: AgeDays Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/AgeDays/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/AgeDays/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/AgeDays/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/ageDaysAsset
+  cO2Asset:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeInteger
+          - AssetModelId
+      AssetName: CO2 Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/CO2/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/CO2/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/CO2/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/cO2Asset
+  illumination:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - sensorsWithDataTypeInteger
+          - AssetModelId
+      AssetName: Illumination Demo-LJbQpihcaa0O
+      AssetProperties:
+        - Alias: /smartfarmsensor/Illumination/id
+          LogicalId: sensorMeasurementId
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/Illumination/qc
+          LogicalId: sensorMeasurementQc
+          NotificationState: DISABLED
+        - Alias: /smartfarmsensor/Illumination/val
+          LogicalId: sensorMeasurementVal
+          NotificationState: DISABLED
+    Metadata:
+      aws:cdk:path: SiemensStack/illumination
+  SmartFarm:
+    Type: AWS::IoTSiteWise::Asset
+    Properties:
+      AssetModelId:
+        Fn::GetAtt:
+          - smartFarmModel
+          - AssetModelId
+      AssetName: Smart_Farm Demo-LJbQpihcaa0O
+      AssetHierarchies:
+        - ChildAssetId:
+            Fn::GetAtt:
+              - lightTimeAsset
+              - AssetId
+          LogicalId: modelDoubleId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - airHumidityAsset
+              - AssetId
+          LogicalId: modelDoubleId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - airTempAsset
+              - AssetId
+          LogicalId: modelDoubleId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - autoLightTimeAsset
+              - AssetId
+          LogicalId: modelDoubleId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - soilTempAsset
+              - AssetId
+          LogicalId: modelDoubleId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - soilHumiAsset
+              - AssetId
+          LogicalId: modelDoubleId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - illumination
+              - AssetId
+          LogicalId: modelIntegerId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - cO2Asset
+              - AssetId
+          LogicalId: modelIntegerId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - yearAsset
+              - AssetId
+          LogicalId: modelIntegerId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - ageDaysAsset
+              - AssetId
+          LogicalId: modelIntegerId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - monthAsset
+              - AssetId
+          LogicalId: modelIntegerId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - dayAsset
+              - AssetId
+          LogicalId: modelIntegerId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - pumpManuAsset
+              - AssetId
+          LogicalId: modelBooleanId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - whiteLightAsset
+              - AssetId
+          LogicalId: modelBooleanId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - heatingManuAsset
+              - AssetId
+          LogicalId: modelBooleanId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - heatingAsset
+              - AssetId
+          LogicalId: modelBooleanId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - fanManuAsset
+              - AssetId
+          LogicalId: modelBooleanId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - blueLightManuAsset
+              - AssetId
+          LogicalId: modelBooleanId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - redLightAsset
+              - AssetId
+          LogicalId: modelBooleanId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - setAgeStartAsset
+              - AssetId
+          LogicalId: modelBooleanId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - lightManualStopAsset
+              - AssetId
+          LogicalId: modelBooleanId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - pumpAsset
+              - AssetId
+          LogicalId: modelBooleanId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - blueLightAsset
+              - AssetId
+          LogicalId: modelBooleanId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - lightHalfAutoAsset
+              - AssetId
+          LogicalId: modelBooleanId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - whiteLightManuAsset
+              - AssetId
+          LogicalId: modelBooleanId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - shortDayAsset
+              - AssetId
+          LogicalId: modelBooleanId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - redLightManuAsset
+              - AssetId
+          LogicalId: modelBooleanId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - fanAsset
+              - AssetId
+          LogicalId: modelBooleanId
+        - ChildAssetId:
+            Fn::GetAtt:
+              - longDayAsset
+              - AssetId
+          LogicalId: modelBooleanId
+    Metadata:
+      aws:cdk:path: SiemensStack/Smart Farm
+  describeAssetModelCustomResourcePolicy0781B254:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: iotsitewise:DescribeAssetModel
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: describeAssetModelCustomResourcePolicy0781B254
+      Roles:
+        - Ref: AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2
+    DependsOn:
+      - sensorsWithDataTypeDouble
+    Metadata:
+      aws:cdk:path: SiemensStack/describeAssetModel/CustomResourcePolicy/Resource
+  describeAssetModel793CB029:
+    Type: Custom::AWS
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - AWS679f53fac002430cb0da5b7982bd22872D164C4C
+          - Arn
+      Create:
+        Fn::Join:
+          - ""
+          - - '{"service":"IoTSiteWise","action":"describeAssetModel","physicalResourceId":{"responsePath":"assetModelArn"},"parameters":{"assetModelId":"'
+            - Fn::GetAtt:
+                - sensorsWithDataTypeDouble
+                - AssetModelId
+            - '"}}'
+      InstallLatestAwsSdk: true
+    DependsOn:
+      - describeAssetModelCustomResourcePolicy0781B254
+      - sensorsWithDataTypeDouble
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: SiemensStack/describeAssetModel/Resource/Default
+  AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: SiemensStack/AWS679f53fac002430cb0da5b7982bd2287/ServiceRole/Resource
+  AWS679f53fac002430cb0da5b7982bd22872D164C4C:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: |-
+          "use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.handler=exports.forceSdkInstallation=exports.flatten=exports.PHYSICAL_RESOURCE_ID_REFERENCE=void 0;const child_process_1=require("child_process"),fs=require("fs"),path_1=require("path");exports.PHYSICAL_RESOURCE_ID_REFERENCE="PHYSICAL:RESOURCEID:";function flatten(object){return Object.assign({},...function _flatten(child,path=[]){return[].concat(...Object.keys(child).map(key=>{const childKey=Buffer.isBuffer(child[key])?child[key].toString("utf8"):child[key];return typeof childKey=="object"&&childKey!==null?_flatten(childKey,path.concat([key])):{[path.concat([key]).join(".")]:childKey}}))}(object))}exports.flatten=flatten;function decodeSpecialValues(object,physicalResourceId){return JSON.parse(JSON.stringify(object),(_k,v)=>{switch(v){case exports.PHYSICAL_RESOURCE_ID_REFERENCE:return physicalResourceId;default:return v}})}function filterKeys(object,pred){return Object.entries(object).reduce((acc,[k,v])=>pred(k)?{...acc,[k]:v}:acc,{})}let latestSdkInstalled=!1;function forceSdkInstallation(){latestSdkInstalled=!1}exports.forceSdkInstallation=forceSdkInstallation;function installLatestSdk(){console.log("Installing latest AWS SDK v2"),child_process_1.execSync("HOME=/tmp npm install aws-sdk@2 --production --no-package-lock --no-save --prefix /tmp"),latestSdkInstalled=!0}const patchedServices=[];function patchSdk(awsSdk){const apiLoader=awsSdk.apiLoader;return patchedServices.forEach(({serviceName,apiVersions})=>{const lowerServiceName=serviceName.toLowerCase();awsSdk.Service.hasService(lowerServiceName)?awsSdk.Service.addVersions(awsSdk[serviceName],apiVersions):(apiLoader.services[lowerServiceName]={},awsSdk[serviceName]=awsSdk.Service.defineService(lowerServiceName,apiVersions)),apiVersions.forEach(apiVersion=>{Object.defineProperty(apiLoader.services[lowerServiceName],apiVersion,{get:function(){const modelFilePrefix=`aws-sdk-patch/${lowerServiceName}-${apiVersion}`,model=JSON.parse(fs.readFileSync(path_1.join(__dirname,`${modelFilePrefix}.service.json`),"utf-8"));return model.paginators=JSON.parse(fs.readFileSync(path_1.join(__dirname,`${modelFilePrefix}.paginators.json`),"utf-8")).pagination,model},enumerable:!0,configurable:!0})})}),awsSdk}async function handler(event,context){var _a,_b,_c,_d,_e,_f,_g,_h,_j,_l,_m,_o,_p;try{let AWS;if(!latestSdkInstalled&&event.ResourceProperties.InstallLatestAwsSdk==="true")try{installLatestSdk(),AWS=require("/tmp/node_modules/aws-sdk")}catch(e){console.log(`Failed to install latest AWS SDK v2: ${e}`),AWS=require("aws-sdk")}else latestSdkInstalled?AWS=require("/tmp/node_modules/aws-sdk"):AWS=require("aws-sdk");try{AWS=patchSdk(AWS)}catch(e){console.log(`Failed to patch AWS SDK: ${e}. Proceeding with the installed copy.`)}console.log(JSON.stringify(event)),console.log("AWS SDK VERSION: "+AWS.VERSION),event.ResourceProperties.Create=decodeCall(event.ResourceProperties.Create),event.ResourceProperties.Update=decodeCall(event.ResourceProperties.Update),event.ResourceProperties.Delete=decodeCall(event.ResourceProperties.Delete);let physicalResourceId;switch(event.RequestType){case"Create":physicalResourceId=(_j=(_f=(_c=(_b=(_a=event.ResourceProperties.Create)===null||_a===void 0?void 0:_a.physicalResourceId)===null||_b===void 0?void 0:_b.id)!==null&&_c!==void 0?_c:(_e=(_d=event.ResourceProperties.Update)===null||_d===void 0?void 0:_d.physicalResourceId)===null||_e===void 0?void 0:_e.id)!==null&&_f!==void 0?_f:(_h=(_g=event.ResourceProperties.Delete)===null||_g===void 0?void 0:_g.physicalResourceId)===null||_h===void 0?void 0:_h.id)!==null&&_j!==void 0?_j:event.LogicalResourceId;break;case"Update":case"Delete":physicalResourceId=(_o=(_m=(_l=event.ResourceProperties[event.RequestType])===null||_l===void 0?void 0:_l.physicalResourceId)===null||_m===void 0?void 0:_m.id)!==null&&_o!==void 0?_o:event.PhysicalResourceId;break}let flatData={},data={};const call=event.ResourceProperties[event.RequestType];if(call){let credentials;if(call.assumedRoleArn){const timestamp=new Date().getTime(),params={RoleArn:call.assumedRoleArn,RoleSessionName:`${timestamp}-${physicalResourceId}`.substring(0,64)};credentials=new AWS.ChainableTemporaryCredentials({params})}if(!Object.prototype.hasOwnProperty.call(AWS,call.service))throw Error(`Service ${call.service} does not exist in AWS SDK version ${AWS.VERSION}.`);const awsService=new AWS[call.service]({apiVersion:call.apiVersion,credentials,region:call.region});try{const response=await awsService[call.action](call.parameters&&decodeSpecialValues(call.parameters,physicalResourceId)).promise();flatData={apiVersion:awsService.config.apiVersion,region:awsService.config.region,...flatten(response)};let outputPaths;call.outputPath?outputPaths=[call.outputPath]:call.outputPaths&&(outputPaths=call.outputPaths),outputPaths?data=filterKeys(flatData,startsWithOneOf(outputPaths)):data=flatData}catch(e){if(!call.ignoreErrorCodesMatching||!new RegExp(call.ignoreErrorCodesMatching).test(e.code))throw e}!((_p=call.physicalResourceId)===null||_p===void 0)&&_p.responsePath&&(physicalResourceId=flatData[call.physicalResourceId.responsePath])}await respond("SUCCESS","OK",physicalResourceId,data)}catch(e){console.log(e),await respond("FAILED",e.message||"Internal Error",context.logStreamName,{})}function respond(responseStatus,reason,physicalResourceId,data){const responseBody=JSON.stringify({Status:responseStatus,Reason:reason,PhysicalResourceId:physicalResourceId,StackId:event.StackId,RequestId:event.RequestId,LogicalResourceId:event.LogicalResourceId,NoEcho:!1,Data:data});console.log("Responding",responseBody);const parsedUrl=require("url").parse(event.ResponseURL),requestOptions={hostname:parsedUrl.hostname,path:parsedUrl.path,method:"PUT",headers:{"content-type":"","content-length":responseBody.length}};return new Promise((resolve,reject)=>{try{const request=require("https").request(requestOptions,resolve);request.on("error",reject),request.write(responseBody),request.end()}catch(e){reject(e)}})}}exports.handler=handler;function decodeCall(call){if(!!call)return JSON.parse(call)}function startsWithOneOf(searchStrings){return function(string){for(const searchString of searchStrings)if(string.startsWith(searchString))return!0;return!1}}
+      Role:
+        Fn::GetAtt:
+          - AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2
+          - Arn
+      Handler: index.handler
+      Runtime: nodejs12.x
+      Timeout: 120
+    DependsOn:
+      - AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2
+    Metadata:
+      aws:cdk:path: SiemensStack/AWS679f53fac002430cb0da5b7982bd2287/Resource
+  updateAssetModelDoubleCustomResourcePolicy28529FEB:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: iotsitewise:UpdateAssetModel
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: updateAssetModelDoubleCustomResourcePolicy28529FEB
+      Roles:
+        - Ref: AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2
+    DependsOn:
+      - describeAssetModelCustomResourcePolicy0781B254
+      - describeAssetModel793CB029
+    Metadata:
+      aws:cdk:path: SiemensStack/updateAssetModelDouble/CustomResourcePolicy/Resource
+  updateAssetModelDouble3F4F0569:
+    Type: Custom::AWS
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - AWS679f53fac002430cb0da5b7982bd22872D164C4C
+          - Arn
+      Create:
+        Fn::Join:
+          - ""
+          - - '{"service":"IoTSiteWise","action":"updateAssetModel","physicalResourceId":{"id":"'
+            - Fn::GetAtt:
+                - sensorsWithDataTypeDouble
+                - AssetModelId
+            - '"},"parameters":{"assetModelId":"'
+            - Fn::GetAtt:
+                - sensorsWithDataTypeDouble
+                - AssetModelId
+            - '","assetModelName":"Siemens Sensors With Datatype Double Demo-LJbQpihcaa0O","assetModelProperties":[{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.0.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.0.name
+            - '","dataType":"STRING","type":{"attribute":{"defaultValue":"sensor"}}},{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.1.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.1.name
+            - '","dataType":"DOUBLE","type":{"attribute":{"defaultValue":"25"}}},{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.2.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.2.name
+            - '","dataType":"DOUBLE","type":{"attribute":{"defaultValue":"15"}}},{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.3.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.3.name
+            - '","dataType":"STRING","type":{"measurement":{}}},{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.4.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.4.name
+            - '","dataType":"INTEGER","type":{"measurement":{}}},{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.5.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.5.name
+            - '","dataType":"DOUBLE","type":{"measurement":{}}},{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.6.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.6.name
+            - '","dataType":"DOUBLE","type":{"metric":{"expression":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.6.type.metric.expression
+            - '","variables":[{"name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.6.type.metric.variables.0.name
+            - '","value":{"propertyId":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.6.type.metric.variables.0.value.propertyId
+            - '"}}],"window":{"tumbling":{"interval":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.6.type.metric.window.tumbling.interval
+            - '"}}}}},{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.7.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.7.name
+            - '","dataType":"DOUBLE","type":{"metric":{"expression":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.7.type.metric.expression
+            - '","variables":[{"name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.7.type.metric.variables.0.name
+            - '","value":{"propertyId":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.7.type.metric.variables.0.value.propertyId
+            - '"}}],"window":{"tumbling":{"interval":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.7.type.metric.window.tumbling.interval
+            - '"}}}}},{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.8.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.8.name
+            - '","dataType":"DOUBLE","type":{"metric":{"expression":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.8.type.metric.expression
+            - '","variables":[{"name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.8.type.metric.variables.0.name
+            - '","value":{"propertyId":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.8.type.metric.variables.0.value.propertyId
+            - '"}}],"window":{"tumbling":{"interval":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.8.type.metric.window.tumbling.interval
+            - '"}}}}}],"assetModelCompositeModels":[{"name":"MaxSoilTemp","type":"AWS/ALARM","properties":[{"name":"AWS/ALARM_TYPE","dataType":"STRING","type":{"attribute":{"defaultValue":"IOT_EVENTS"}}},{"name":"AWS/ALARM_STATE","dataType":"STRUCT","dataTypeSpec":"AWS/ALARM_STATE","type":{"measurement":{}}}]},{"name":"MaxSoilHumi","type":"AWS/ALARM","properties":[{"name":"AWS/ALARM_TYPE","dataType":"STRING","type":{"attribute":{"defaultValue":"IOT_EVENTS"}}},{"name":"AWS/ALARM_STATE","dataType":"STRUCT","dataTypeSpec":"AWS/ALARM_STATE","type":{"measurement":{}}}]}]}}'
+      InstallLatestAwsSdk: true
+    DependsOn:
+      - describeAssetModelCustomResourcePolicy0781B254
+      - describeAssetModel793CB029
+      - updateAssetModelDoubleCustomResourcePolicy28529FEB
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: SiemensStack/updateAssetModelDouble/Resource/Default
+  SiemensSmartfarmAlarmSoilHumi:
+    Type: AWS::IoTEvents::AlarmModel
+    Properties:
+      AlarmRule:
+        SimpleRule:
+          ComparisonOperator: GREATER_OR_EQUAL
+          InputProperty:
+            Fn::Join:
+              - ""
+              - - $sitewise.assetModel.`
+                - Fn::GetAtt:
+                    - sensorsWithDataTypeDouble
+                    - AssetModelId
+                - "`.`"
+                - Fn::GetAtt:
+                    - describeAssetModel793CB029
+                    - assetModelProperties.6.id
+                - "`.propertyValue.value"
+          Threshold:
+            Fn::Join:
+              - ""
+              - - $sitewise.assetModel.`
+                - Fn::GetAtt:
+                    - sensorsWithDataTypeDouble
+                    - AssetModelId
+                - "`.`"
+                - Fn::GetAtt:
+                    - describeAssetModel793CB029
+                    - assetModelProperties.2.id
+                - "`.propertyValue.value"
+      RoleArn:
+        Fn::GetAtt:
+          - IoTSiteWiseAccessForIoTEventsroleB6775CBC
+          - Arn
+      AlarmCapabilities:
+        AcknowledgeFlow:
+          Enabled: true
+        InitializationConfiguration:
+          DisabledOnInitialization: false
+      AlarmModelDescription: SiemensSmartfarmAlarmSoilHumi
+      AlarmModelName: SiemensSmartfarmAlarmSoilHumi_Demo_LJbQpihcaa0O
+      Severity: 2
+    DependsOn:
+      - describeAssetModelCustomResourcePolicy0781B254
+      - describeAssetModel793CB029
+      - updateAssetModelDoubleCustomResourcePolicy28529FEB
+      - updateAssetModelDouble3F4F0569
+    Metadata:
+      aws:cdk:path: SiemensStack/SiemensSmartfarmAlarmSoilHumi
+  SiemensSmartfarmAlarmSoilTemp:
+    Type: AWS::IoTEvents::AlarmModel
+    Properties:
+      AlarmRule:
+        SimpleRule:
+          ComparisonOperator: GREATER_OR_EQUAL
+          InputProperty:
+            Fn::Join:
+              - ""
+              - - $sitewise.assetModel.`
+                - Fn::GetAtt:
+                    - sensorsWithDataTypeDouble
+                    - AssetModelId
+                - "`.`"
+                - Fn::GetAtt:
+                    - describeAssetModel793CB029
+                    - assetModelProperties.6.id
+                - "`.propertyValue.value"
+          Threshold:
+            Fn::Join:
+              - ""
+              - - $sitewise.assetModel.`
+                - Fn::GetAtt:
+                    - sensorsWithDataTypeDouble
+                    - AssetModelId
+                - "`.`"
+                - Fn::GetAtt:
+                    - describeAssetModel793CB029
+                    - assetModelProperties.1.id
+                - "`.propertyValue.value"
+      RoleArn:
+        Fn::GetAtt:
+          - IoTSiteWiseAccessForIoTEventsroleB6775CBC
+          - Arn
+      AlarmCapabilities:
+        AcknowledgeFlow:
+          Enabled: true
+        InitializationConfiguration:
+          DisabledOnInitialization: false
+      AlarmModelDescription: SiemensSmartfarmAlarmSoilTemp
+      AlarmModelName: SiemensSmartfarmAlarmSoilTemp_Demo_LJbQpihcaa0O
+      Severity: 1
+    DependsOn:
+      - describeAssetModelCustomResourcePolicy0781B254
+      - describeAssetModel793CB029
+      - updateAssetModelDoubleCustomResourcePolicy28529FEB
+      - updateAssetModelDouble3F4F0569
+    Metadata:
+      aws:cdk:path: SiemensStack/SiemensSmartfarmAlarmSoilTemp
+  describeAlarmModelHumiCustomResourcePolicy4B07ACFA:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: iotevents:DescribeAlarmModel
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: describeAlarmModelHumiCustomResourcePolicy4B07ACFA
+      Roles:
+        - Ref: AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2
+    DependsOn:
+      - SiemensSmartfarmAlarmSoilHumi
+    Metadata:
+      aws:cdk:path: SiemensStack/describeAlarmModelHumi/CustomResourcePolicy/Resource
+  describeAlarmModelHumi83B62415:
+    Type: Custom::AWS
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - AWS679f53fac002430cb0da5b7982bd22872D164C4C
+          - Arn
+      Create: '{"service":"IoTEvents","action":"describeAlarmModel","physicalResourceId":{"id":"SiemensSmartfarmAlarmSoilHumi_Demo_LJbQpihcaa0O"},"parameters":{"alarmModelName":"SiemensSmartfarmAlarmSoilHumi_Demo_LJbQpihcaa0O"}}'
+      InstallLatestAwsSdk: true
+    DependsOn:
+      - describeAlarmModelHumiCustomResourcePolicy4B07ACFA
+      - SiemensSmartfarmAlarmSoilHumi
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: SiemensStack/describeAlarmModelHumi/Resource/Default
+  describeAlarmModelTempCustomResourcePolicy046CEBC0:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: iotevents:DescribeAlarmModel
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: describeAlarmModelTempCustomResourcePolicy046CEBC0
+      Roles:
+        - Ref: AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2
+    DependsOn:
+      - SiemensSmartfarmAlarmSoilTemp
+    Metadata:
+      aws:cdk:path: SiemensStack/describeAlarmModelTemp/CustomResourcePolicy/Resource
+  describeAlarmModelTempF72E4A79:
+    Type: Custom::AWS
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - AWS679f53fac002430cb0da5b7982bd22872D164C4C
+          - Arn
+      Create: '{"service":"IoTEvents","action":"describeAlarmModel","physicalResourceId":{"id":"SiemensSmartfarmAlarmSoilTemp_Demo_LJbQpihcaa0O"},"parameters":{"alarmModelName":"SiemensSmartfarmAlarmSoilTemp_Demo_LJbQpihcaa0O"}}'
+      InstallLatestAwsSdk: true
+    DependsOn:
+      - describeAlarmModelTempCustomResourcePolicy046CEBC0
+      - SiemensSmartfarmAlarmSoilTemp
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: SiemensStack/describeAlarmModelTemp/Resource/Default
+  updateAssetModelDouble2CustomResourcePolicy1F55E5D2:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: iotsitewise:UpdateAssetModel
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: updateAssetModelDouble2CustomResourcePolicy1F55E5D2
+      Roles:
+        - Ref: AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2
+    DependsOn:
+      - describeAlarmModelHumiCustomResourcePolicy4B07ACFA
+      - describeAlarmModelHumi83B62415
+      - describeAlarmModelTempCustomResourcePolicy046CEBC0
+      - describeAlarmModelTempF72E4A79
+    Metadata:
+      aws:cdk:path: SiemensStack/updateAssetModelDouble2/CustomResourcePolicy/Resource
+  updateAssetModelDouble23F290376:
+    Type: Custom::AWS
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - AWS679f53fac002430cb0da5b7982bd22872D164C4C
+          - Arn
+      Create:
+        Fn::Join:
+          - ""
+          - - '{"service":"IoTSiteWise","action":"updateAssetModel","physicalResourceId":{"id":"'
+            - Fn::GetAtt:
+                - sensorsWithDataTypeDouble
+                - AssetModelId
+            - '"},"parameters":{"assetModelId":"'
+            - Fn::GetAtt:
+                - sensorsWithDataTypeDouble
+                - AssetModelId
+            - '","assetModelName":"Siemens Sensors With Datatype Double Demo-LJbQpihcaa0O","assetModelProperties":[{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.0.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.0.name
+            - '","dataType":"STRING","type":{"attribute":{"defaultValue":"sensor"}}},{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.1.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.1.name
+            - '","dataType":"DOUBLE","type":{"attribute":{"defaultValue":"25"}}},{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.2.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.2.name
+            - '","dataType":"DOUBLE","type":{"attribute":{"defaultValue":"15"}}},{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.3.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.3.name
+            - '","dataType":"STRING","type":{"measurement":{}}},{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.4.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.4.name
+            - '","dataType":"INTEGER","type":{"measurement":{}}},{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.5.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.5.name
+            - '","dataType":"DOUBLE","type":{"measurement":{}}},{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.6.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.6.name
+            - '","dataType":"DOUBLE","type":{"metric":{"expression":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.6.type.metric.expression
+            - '","variables":[{"name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.6.type.metric.variables.0.name
+            - '","value":{"propertyId":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.6.type.metric.variables.0.value.propertyId
+            - '"}}],"window":{"tumbling":{"interval":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.6.type.metric.window.tumbling.interval
+            - '"}}}}},{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.7.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.7.name
+            - '","dataType":"DOUBLE","type":{"metric":{"expression":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.7.type.metric.expression
+            - '","variables":[{"name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.7.type.metric.variables.0.name
+            - '","value":{"propertyId":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.7.type.metric.variables.0.value.propertyId
+            - '"}}],"window":{"tumbling":{"interval":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.7.type.metric.window.tumbling.interval
+            - '"}}}}},{"id":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.8.id
+            - '","name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.8.name
+            - '","dataType":"DOUBLE","type":{"metric":{"expression":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.8.type.metric.expression
+            - '","variables":[{"name":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.8.type.metric.variables.0.name
+            - '","value":{"propertyId":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.8.type.metric.variables.0.value.propertyId
+            - '"}}],"window":{"tumbling":{"interval":"'
+            - Fn::GetAtt:
+                - describeAssetModel793CB029
+                - assetModelProperties.8.type.metric.window.tumbling.interval
+            - '"}}}}}],"assetModelCompositeModels":[{"name":"MaxSoilTemp","type":"AWS/ALARM","properties":[{"name":"AWS/ALARM_TYPE","dataType":"STRING","type":{"attribute":{"defaultValue":"IOT_EVENTS"}}},{"name":"AWS/ALARM_STATE","dataType":"STRUCT","dataTypeSpec":"AWS/ALARM_STATE","type":{"measurement":{}}},{"name":"AWS/ALARM_SOURCE","dataType":"STRING","type":{"attribute":{"defaultValue":"'
+            - Fn::GetAtt:
+                - describeAlarmModelTempF72E4A79
+                - alarmModelArn
+            - '"}}}]},{"name":"MaxSoilHumi","type":"AWS/ALARM","properties":[{"name":"AWS/ALARM_TYPE","dataType":"STRING","type":{"attribute":{"defaultValue":"IOT_EVENTS"}}},{"name":"AWS/ALARM_STATE","dataType":"STRUCT","dataTypeSpec":"AWS/ALARM_STATE","type":{"measurement":{}}},{"name":"AWS/ALARM_SOURCE","dataType":"STRING","type":{"attribute":{"defaultValue":"'
+            - Fn::GetAtt:
+                - describeAlarmModelHumi83B62415
+                - alarmModelArn
+            - '"}}}]}]}}'
+      InstallLatestAwsSdk: true
+    DependsOn:
+      - describeAlarmModelHumiCustomResourcePolicy4B07ACFA
+      - describeAlarmModelHumi83B62415
+      - describeAlarmModelTempCustomResourcePolicy046CEBC0
+      - describeAlarmModelTempF72E4A79
+      - updateAssetModelDouble2CustomResourcePolicy1F55E5D2
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: SiemensStack/updateAssetModelDouble2/Resource/Default
+  SiteWiseTutorialDeviceRuleRole0B388303:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: iot.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: SiemensStack/SiteWiseTutorialDeviceRuleRole/Resource
+  SiteWiseTutorialDeviceRuleRoleDefaultPolicy0D439F7F:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - iot:Publish
+              - iotsitewise:BatchPutAssetPropertyValue
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: SiteWiseTutorialDeviceRuleRoleDefaultPolicy0D439F7F
+      Roles:
+        - Ref: SiteWiseTutorialDeviceRuleRole0B388303
+    Metadata:
+      aws:cdk:path: SiemensStack/SiteWiseTutorialDeviceRuleRole/DefaultPolicy/Resource
+  SiemensSmartFarmSoilTempDemoLJbQpihcaa0O37CFD2F9:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/SoilTemp/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(get((SELECT VALUE ts FROM payload.vals WHERE id = '101'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        DoubleValue: ${get((SELECT VALUE val FROM payload.vals WHERE id = '101'),0)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_SoilTemp_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_SoilTemp_Demo_LJbQpihcaa0O/Siemens_SmartFarm_SoilTemp_Demo_LJbQpihcaa0O
+  SiemensSmartFarmIlluminationDemoLJbQpihcaa0O1E607E01:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/Illumination/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(get((SELECT VALUE ts FROM payload.vals WHERE id = '102'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        IntegerValue: ${get((SELECT VALUE val FROM payload.vals WHERE id = '102'),0)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_Illumination_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_Illumination_Demo_LJbQpihcaa0O/Siemens_SmartFarm_Illumination_Demo_LJbQpihcaa0O
+  SiemensSmartFarmAirTempDemoLJbQpihcaa0O107D47FD:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/AirTemp/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(get((SELECT VALUE ts FROM payload.vals WHERE id = '103'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        DoubleValue: ${get((SELECT VALUE val FROM payload.vals WHERE id = '103'),0)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_AirTemp_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_AirTemp_Demo_LJbQpihcaa0O/Siemens_SmartFarm_AirTemp_Demo_LJbQpihcaa0O
+  SiemensSmartFarmSoilHumiDemoLJbQpihcaa0O0DD68BAB:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/SoilHumi/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(get((SELECT VALUE ts FROM payload.vals WHERE id = '104'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        DoubleValue: ${get((SELECT VALUE val FROM payload.vals WHERE id = '104'),0)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_SoilHumi_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_SoilHumi_Demo_LJbQpihcaa0O/Siemens_SmartFarm_SoilHumi_Demo_LJbQpihcaa0O
+  SiemensSmartFarmCO2DemoLJbQpihcaa0O6614125A:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/CO2/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(get((SELECT VALUE ts FROM payload.vals WHERE id = '105'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        IntegerValue: ${get((SELECT VALUE val FROM payload.vals WHERE id = '105'),0)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_CO2_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_CO2_Demo_LJbQpihcaa0O/Siemens_SmartFarm_CO2_Demo_LJbQpihcaa0O
+  SiemensSmartFarmAirHumidityDemoLJbQpihcaa0O8E4BE4DB:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/AirHumidity/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(get((SELECT VALUE ts FROM payload.vals WHERE id = '106'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        DoubleValue: ${get((SELECT VALUE val FROM payload.vals WHERE id = '106'),0)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_AirHumidity_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_AirHumidity_Demo_LJbQpihcaa0O/Siemens_SmartFarm_AirHumidity_Demo_LJbQpihcaa0O
+  SiemensSmartFarmAutoManuDemoLJbQpihcaa0OE1C0ECD6:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/Auto_Manu/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '107'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '107'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_Auto_Manu_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_Auto_Manu_Demo_LJbQpihcaa0O/Siemens_SmartFarm_Auto_Manu_Demo_LJbQpihcaa0O
+  SiemensSmartFarmHeatingDemoLJbQpihcaa0OFDC11BC4:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/Heating/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '108'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '108'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_Heating_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_Heating_Demo_LJbQpihcaa0O/Siemens_SmartFarm_Heating_Demo_LJbQpihcaa0O
+  SiemensSmartFarmPumpDemoLJbQpihcaa0O0A7F04EF:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/Pump/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '109'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '109'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_Pump_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_Pump_Demo_LJbQpihcaa0O/Siemens_SmartFarm_Pump_Demo_LJbQpihcaa0O
+  SiemensSmartFarmFanDemoLJbQpihcaa0OC2B5EB5E:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/Fan/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '110'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '110'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_Fan_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_Fan_Demo_LJbQpihcaa0O/Siemens_SmartFarm_Fan_Demo_LJbQpihcaa0O
+  SiemensSmartFarmRedLightDemoLJbQpihcaa0O530ACB1C:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/RedLight/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '111'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '111'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_RedLight_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_RedLight_Demo_LJbQpihcaa0O/Siemens_SmartFarm_RedLight_Demo_LJbQpihcaa0O
+  SiemensSmartFarmBlueLightDemoLJbQpihcaa0OC3678AE8:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/BlueLight/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '112'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '112'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_BlueLight_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_BlueLight_Demo_LJbQpihcaa0O/Siemens_SmartFarm_BlueLight_Demo_LJbQpihcaa0O
+  SiemensSmartFarmWhiteLightDemoLJbQpihcaa0O772AB444:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/WhiteLight/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '113'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '113'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_WhiteLight_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_WhiteLight_Demo_LJbQpihcaa0O/Siemens_SmartFarm_WhiteLight_Demo_LJbQpihcaa0O
+  SiemensSmartFarmFanManuDemoLJbQpihcaa0O8BD03E7F:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/FanManu/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '114'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '114'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_FanManu_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_FanManu_Demo_LJbQpihcaa0O/Siemens_SmartFarm_FanManu_Demo_LJbQpihcaa0O
+  SiemensSmartFarmWhiteLightManuDemoLJbQpihcaa0O5958BD9B:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/WhiteLightManu/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '115'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '115'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_WhiteLightManu_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_WhiteLightManu_Demo_LJbQpihcaa0O/Siemens_SmartFarm_WhiteLightManu_Demo_LJbQpihcaa0O
+  SiemensSmartFarmRedLightManuDemoLJbQpihcaa0OE19DA3F2:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/RedLightManu/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '116'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '116'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_RedLightManu_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_RedLightManu_Demo_LJbQpihcaa0O/Siemens_SmartFarm_RedLightManu_Demo_LJbQpihcaa0O
+  SiemensSmartFarmPumpManuDemoLJbQpihcaa0O2F6471A8:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/PumpManu/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '117'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '117'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_PumpManu_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_PumpManu_Demo_LJbQpihcaa0O/Siemens_SmartFarm_PumpManu_Demo_LJbQpihcaa0O
+  SiemensSmartFarmHeatingManuDemoLJbQpihcaa0O79CE3B26:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/HeatingManu/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '118'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '118'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_HeatingManu_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_HeatingManu_Demo_LJbQpihcaa0O/Siemens_SmartFarm_HeatingManu_Demo_LJbQpihcaa0O
+  SiemensSmartFarmDAYDemoLJbQpihcaa0OC637E5B9:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/DAY/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(get((SELECT VALUE ts FROM payload.vals WHERE id = '119'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        IntegerValue: ${get((SELECT VALUE val FROM payload.vals WHERE id = '119'),0)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_DAY_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_DAY_Demo_LJbQpihcaa0O/Siemens_SmartFarm_DAY_Demo_LJbQpihcaa0O
+  SiemensSmartFarmBlueLightManuDemoLJbQpihcaa0O091624B3:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/BlueLightManu/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '120'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '120'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_BlueLightManu_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_BlueLightManu_Demo_LJbQpihcaa0O/Siemens_SmartFarm_BlueLightManu_Demo_LJbQpihcaa0O
+  SiemensSmartFarmMonthDemoLJbQpihcaa0OA0CBD3CF:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/Month/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(get((SELECT VALUE ts FROM payload.vals WHERE id = '121'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        IntegerValue: ${get((SELECT VALUE val FROM payload.vals WHERE id = '121'),0)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_Month_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_Month_Demo_LJbQpihcaa0O/Siemens_SmartFarm_Month_Demo_LJbQpihcaa0O
+  SiemensSmartFarmYearDemoLJbQpihcaa0O354C1175:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/Year/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(get((SELECT VALUE ts FROM payload.vals WHERE id = '122'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        IntegerValue: ${get((SELECT VALUE val FROM payload.vals WHERE id = '122'),0)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_Year_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_Year_Demo_LJbQpihcaa0O/Siemens_SmartFarm_Year_Demo_LJbQpihcaa0O
+  SiemensSmartFarmAutoLightTimeDemoLJbQpihcaa0OF4BBB643:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/AutoLightTime/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(get((SELECT VALUE ts FROM payload.vals WHERE id = '123'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        DoubleValue: ${get((SELECT VALUE val FROM payload.vals WHERE id = '123'),0)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_AutoLightTime_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_AutoLightTime_Demo_LJbQpihcaa0O/Siemens_SmartFarm_AutoLightTime_Demo_LJbQpihcaa0O
+  SiemensSmartFarmLongDayDemoLJbQpihcaa0ODA17E06F:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/LongDay/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '124'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '124'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_LongDay_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_LongDay_Demo_LJbQpihcaa0O/Siemens_SmartFarm_LongDay_Demo_LJbQpihcaa0O
+  SiemensSmartFarmShortDayDemoLJbQpihcaa0O42563AA5:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/ShortDay/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '125'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '125'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_ShortDay_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_ShortDay_Demo_LJbQpihcaa0O/Siemens_SmartFarm_ShortDay_Demo_LJbQpihcaa0O
+  SiemensSmartFarmLightManualStopDemoLJbQpihcaa0OEF9C263E:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/LightManualStop/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '126'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '126'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_LightManualStop_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_LightManualStop_Demo_LJbQpihcaa0O/Siemens_SmartFarm_LightManualStop_Demo_LJbQpihcaa0O
+  SiemensSmartFarmLightTimeDemoLJbQpihcaa0O7EBE0317:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/LightTime/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(get((SELECT VALUE ts FROM payload.vals WHERE id = '127'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        DoubleValue: ${get((SELECT VALUE val FROM payload.vals WHERE id = '127'),0)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_LightTime_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_LightTime_Demo_LJbQpihcaa0O/Siemens_SmartFarm_LightTime_Demo_LJbQpihcaa0O
+  SiemensSmartFarmLightHalfAutoDemoLJbQpihcaa0O7F2CA903:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/LightHalfAuto/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '128'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '128'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_LightHalfAuto_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_LightHalfAuto_Demo_LJbQpihcaa0O/Siemens_SmartFarm_LightHalfAuto_Demo_LJbQpihcaa0O
+  SiemensSmartFarmAgeDaysDemoLJbQpihcaa0O5418A4A0:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/AgeDays/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(get((SELECT VALUE ts FROM payload.vals WHERE id = '129'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        IntegerValue: ${get((SELECT VALUE val FROM payload.vals WHERE id = '129'),0)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_AgeDays_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_AgeDays_Demo_LJbQpihcaa0O/Siemens_SmartFarm_AgeDays_Demo_LJbQpihcaa0O
+  SiemensSmartFarmSetAgeStartDemoLJbQpihcaa0O37523207:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - IotSiteWise:
+              PutAssetPropertyValueEntries:
+                - PropertyAlias: /smartfarmsensor/SetAgeStart/val
+                  PropertyValues:
+                    - Timestamp:
+                        TimeInSeconds: ${time_to_epoch(GET((SELECT VALUE ts FROM payload.vals WHERE id = '130'),0), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")/1000}
+                      Value:
+                        BooleanValue: ${cast(GET((SELECT value val FROM payload.vals WHERE id = '130'), 0) as Boolean)}
+              RoleArn:
+                Fn::GetAtt:
+                  - SiteWiseTutorialDeviceRuleRole0B388303
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+      RuleName: Siemens_SmartFarm_SetAgeStart_Sitewise_Demo_LJbQpihcaa0O
+    Metadata:
+      aws:cdk:path: SiemensStack/Siemens_SmartFarm_SetAgeStart_Demo_LJbQpihcaa0O/Siemens_SmartFarm_SetAgeStart_Demo_LJbQpihcaa0O
+  AWSIoTSiteWiseMonitorServiceRoleE93BE87F:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: monitor.iotsitewise.amazonaws.com
+        Version: "2012-10-17"
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - iotevents:DescribeAlarmModel
+                  - iotevents:ListTagsForResource
+                  - iotsitewise:BatchAssociateProjectAssets
+                  - iotsitewise:BatchDisassociateProjectAssets
+                  - iotsitewise:BatchPutAssetPropertyValue
+                  - iotsitewise:CreateAccessPolicy
+                  - iotsitewise:CreateDashboard
+                  - iotsitewise:CreateProject
+                  - iotsitewise:DeleteAccessPolicy
+                  - iotsitewise:DeleteDashboard
+                  - iotsitewise:DeleteProject
+                  - iotsitewise:DescribeAccessPolicy
+                  - iotsitewise:DescribeAsset
+                  - iotsitewise:DescribeAssetModel
+                  - iotsitewise:DescribeAssetProperty
+                  - iotsitewise:DescribeDashboard
+                  - iotsitewise:DescribePortal
+                  - iotsitewise:DescribeProject
+                  - iotsitewise:GetAssetPropertyAggregates
+                  - iotsitewise:GetAssetPropertyValue
+                  - iotsitewise:GetAssetPropertyValueHistory
+                  - iotsitewise:ListAccessPolicies
+                  - iotsitewise:ListAssetModels
+                  - iotsitewise:ListAssetRelationships
+                  - iotsitewise:ListAssets
+                  - iotsitewise:ListAssociatedAssets
+                  - iotsitewise:ListDashboards
+                  - iotsitewise:ListProjectAssets
+                  - iotsitewise:ListProjects
+                  - iotsitewise:UpdateAccessPolicy
+                  - iotsitewise:UpdateAssetModel
+                  - iotsitewise:UpdateAssetModelPropertyRouting
+                  - iotsitewise:UpdateDashboard
+                  - iotsitewise:UpdateProject
+                Effect: Allow
+                Resource: "*"
+              - Action:
+                  - iotevents:BatchAcknowledgeAlarm
+                  - iotevents:BatchDisableAlarm
+                  - iotevents:BatchEnableAlarm
+                  - iotevents:BatchSnoozeAlarm
+                Condition:
+                  "Null":
+                    iotevents:keyValue: "false"
+                Effect: Allow
+                Resource: "*"
+              - Action:
+                  - iotevents:CreateAlarmModel
+                  - iotevents:TagResource
+                Condition:
+                  "Null":
+                    aws:RequestTag/iotsitewisemonitor: "false"
+                Effect: Allow
+                Resource: "*"
+              - Action:
+                  - iotevents:DeleteAlarmModel
+                  - iotevents:UpdateAlarmModel
+                Condition:
+                  "Null":
+                    aws:ResourceTag/iotsitewisemonitor: "false"
+                Effect: Allow
+                Resource: "*"
+              - Action: iam:PassRole
+                Condition:
+                  StringEquals:
+                    iam:PassedToService:
+                      - iotevents.amazonaws.com
+                Effect: Allow
+                Resource: "*"
+            Version: "2012-10-17"
+          PolicyName: monitorServicePortalPolicy
+    Metadata:
+      aws:cdk:path: SiemensStack/AWSIoTSiteWiseMonitorServiceRole/Resource
+  smartFarmPortal:
+    Type: AWS::IoTSiteWise::Portal
+    Properties:
+      PortalContactEmail:
+        Ref: portalContactEmail
+      PortalName: Smart-Farm-Portal Demo-LJbQpihcaa0O
+      RoleArn:
+        Fn::GetAtt:
+          - AWSIoTSiteWiseMonitorServiceRoleE93BE87F
+          - Arn
+      PortalAuthMode: IAM
+      PortalDescription: Smart Farm Portal
+    Metadata:
+      aws:cdk:path: SiemensStack/smartFarmPortal
+  smartFarmProject:
+    Type: AWS::IoTSiteWise::Project
+    Properties:
+      PortalId:
+        Fn::GetAtt:
+          - smartFarmPortal
+          - PortalId
+      ProjectName: SmartFarm Project Demo-LJbQpihcaa0O
+      AssetIds:
+        - Fn::GetAtt:
+            - SmartFarm
+            - AssetId
+      ProjectDescription: SmartFarm Project
+    Metadata:
+      aws:cdk:path: SiemensStack/smartFarmProject
+  siemensindustryedgedemo614CC6A9:
+    Type: AWS::S3::Bucket
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: SiemensStack/siemens-industry-edge-demo/Resource
+  smarFarmDataTransferRoleE929455C:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - iam:PassRole
+                  - iot:*
+                  - logs:*
+                  - s3:PutObject
+                Effect: Allow
+                Resource: "*"
+                Sid: VisualEditor0
+            Version: "2012-10-17"
+          PolicyName: smartFarmDataTransferPolicy
+    Metadata:
+      aws:cdk:path: SiemensStack/smarFarmDataTransferRole/Resource
+  SmartFarmDataTransferLambdaHandlerC1B97CD3:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: |-
+          exports.handler = (event, context, callback) => {
+                      let success = 0; // Number of valid entries found
+                      let failure = 0; // Number of invalid entries found
+                      var firstLoad = 0;
+                      /* Process the list of records and transform them */
+                      const output = event.records.map(record => {
+                          // Kinesis data is base64 encoded so decode here
+                          console.log('current recordId:' + record.recordId);
+                          const payload = (Buffer.from(record.data, 'base64')).toString('utf8');
+                          //console.log('Decoded payload:', payload);
+                          // Split the data into it's fields so we can refer to them by index
+                          const match = JSON.parse(payload);
+                          console.log('match payload:', match);
+                          if (match && match.payload && Array.isArray(match.payload.vals) && match.payload.vals.length && match.payload.vals.length > 0) {
+                              /* Prepare JSON version from Syslog log data */
+                              console.log('match.payload.vals is not null' + match.payload.vals.length);
+                              var result1 = '';
+                              var rowCommonData = new Array();
+                              //add all records item to the recordItems.
+                              var recordItems = new Array();
+                              for(var k in match) {
+                                  if (k != 'payload') {
+                                      recordItems.push(k);
+                                      rowCommonData.push(match[k]);
+                                  }
+                              }
+                              //add all payload data.
+                              var titleItems = Array.from(recordItems);
+                              for (var k in match.payload) {
+                                  if (k != 'vals') {
+                                      titleItems.push('playload.' + k);
+                                      rowCommonData.push(match.payload[k]);
+                                  }
+                              }
+                              var payloadValItems = new Array();
+                              for (var k in match.payload.vals[0]) {
+                                  titleItems.push('playload.vals.' + k);
+                                  payloadValItems.push(k);
+                              }
+                              if (firstLoad == 0) {
+                                  result1 = titleItems.join(',') + "\n";
+                              }
+                              match.payload.vals.forEach(function(valsElement) {
+                                var valElementData = Array.from(rowCommonData);
+                                payloadValItems.forEach(function(valItemName) {
+                                    valElementData.push(valsElement[valItemName]);
+                                });
+                                result1 += valElementData.join(',') + "\n";
+                                success++;
+                              });
+                              console.log('result is :\n' + result1);
+                              firstLoad = 1;
+                              return {
+                                  recordId: record.recordId,
+                                  result: 'Ok',
+                                  data: (Buffer.from(result1, 'utf8')).toString('base64'),
+                              };
+                          } else {
+                              /* Failed event, notify the error and leave the record intact */
+                              failure++;
+                              console.log('failed object is:\n' + record.data)
+                          }
+                      });
+                      console.log('Processing completed.  Successful records ' + success + ', Failed records ' + failure + '.');
+                      callback(null, { records: output, success: success, failure:failure });
+                  };
+      Role:
+        Fn::GetAtt:
+          - smarFarmDataTransferRoleE929455C
+          - Arn
+      Handler: index.handler
+      Runtime: nodejs14.x
+      Timeout: 300
+    DependsOn:
+      - smarFarmDataTransferRoleE929455C
+    Metadata:
+      aws:cdk:path: SiemensStack/SmartFarmDataTransferLambdaHandler/Resource
+  SmartFarmDataTransferLambdaHandlerCurrentVersionC161951E5b90f6ac809dd8eb5b8df480e4de83e9:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName:
+        Ref: SmartFarmDataTransferLambdaHandlerC1B97CD3
+    Metadata:
+      aws:cdk:path: SiemensStack/SmartFarmDataTransferLambdaHandler/CurrentVersion/Resource
+  LambdaAlias9C15A666:
+    Type: AWS::Lambda::Alias
+    Properties:
+      FunctionName:
+        Ref: SmartFarmDataTransferLambdaHandlerC1B97CD3
+      FunctionVersion:
+        Fn::GetAtt:
+          - SmartFarmDataTransferLambdaHandlerCurrentVersionC161951E5b90f6ac809dd8eb5b8df480e4de83e9
+          - Version
+      Name: Prod
+    UpdatePolicy:
+      CodeDeployLambdaAliasUpdate:
+        ApplicationName:
+          Ref: DeploymentGroupApplication7B89ABEB
+        DeploymentGroupName:
+          Ref: DeploymentGroup6D277AF0
+    Metadata:
+      aws:cdk:path: SiemensStack/LambdaAlias/Resource
+  DeploymentGroupApplication7B89ABEB:
+    Type: AWS::CodeDeploy::Application
+    Properties:
+      ComputePlatform: Lambda
+    Metadata:
+      aws:cdk:path: SiemensStack/DeploymentGroup/Application/Resource
+  DeploymentGroupServiceRoleA00955F3:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                Fn::Join:
+                  - ""
+                  - - codedeploy.
+                    - Ref: AWS::Region
+                    - "."
+                    - Ref: AWS::URLSuffix
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSCodeDeployRoleForLambdaLimited
+    Metadata:
+      aws:cdk:path: SiemensStack/DeploymentGroup/ServiceRole/Resource
+  DeploymentGroup6D277AF0:
+    Type: AWS::CodeDeploy::DeploymentGroup
+    Properties:
+      ApplicationName:
+        Ref: DeploymentGroupApplication7B89ABEB
+      ServiceRoleArn:
+        Fn::GetAtt:
+          - DeploymentGroupServiceRoleA00955F3
+          - Arn
+      AutoRollbackConfiguration:
+        Enabled: true
+        Events:
+          - DEPLOYMENT_FAILURE
+      DeploymentConfigName: CodeDeployDefault.LambdaLinear10PercentEvery1Minute
+      DeploymentStyle:
+        DeploymentOption: WITH_TRAFFIC_CONTROL
+        DeploymentType: BLUE_GREEN
+    Metadata:
+      aws:cdk:path: SiemensStack/DeploymentGroup/Resource
+  smartFarmPutS3DeliveryFirehoseRole91EE035B:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: firehose.amazonaws.com
+        Version: "2012-10-17"
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - s3:AbortMultipartUpload
+                  - s3:GetBucketLocation
+                  - s3:GetObject
+                  - s3:ListBucket
+                  - s3:ListBucketMultipartUploads
+                  - s3:PutObject
+                Effect: Allow
+                Resource:
+                  - Fn::GetAtt:
+                      - siemensindustryedgedemo614CC6A9
+                      - Arn
+                  - Fn::Join:
+                      - ""
+                      - - Fn::GetAtt:
+                            - siemensindustryedgedemo614CC6A9
+                            - Arn
+                        - /*
+                Sid: ""
+              - Action:
+                  - kinesis:DescribeStream
+                  - kinesis:GetRecords
+                  - kinesis:GetShardIterator
+                  - kinesis:ListShards
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                  - lambda:GetFunctionConfiguration
+                  - lambda:InvokeFunction
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: "*"
+            Version: "2012-10-17"
+          PolicyName: smartFarmPutS3DeliveryFireHosePolicy
+    Metadata:
+      aws:cdk:path: SiemensStack/smartFarmPutS3DeliveryFirehoseRole/Resource
+  awskinesisfirehoseSmartFarmPUTS3DemoLJbQpihcaa0OB448FC4E:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 731
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: SiemensStack/--aws--kinesisfirehose--SmartFarm-PUT-S3-Demo-LJbQpihcaa0O/Resource
+  awskinesisfirehoseSmartFarmPUTS3DemoLJbQpihcaa0ODestinationDelivery0396B620:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName:
+        Ref: awskinesisfirehoseSmartFarmPUTS3DemoLJbQpihcaa0OB448FC4E
+      LogStreamName: DestinationDelivery
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: SiemensStack/--aws--kinesisfirehose--SmartFarm-PUT-S3-Demo-LJbQpihcaa0O/DestinationDelivery/Resource
+  SmartFarmPUTS3DemoLJbQpihcaa0O:
+    Type: AWS::KinesisFirehose::DeliveryStream
+    Properties:
+      DeliveryStreamName: SiemensStack-SmartFarm-PUT-S3
+      DeliveryStreamType: DirectPut
+      ExtendedS3DestinationConfiguration:
+        BucketARN:
+          Fn::GetAtt:
+            - siemensindustryedgedemo614CC6A9
+            - Arn
+        BufferingHints:
+          IntervalInSeconds: 300
+          SizeInMBs: 5
+        CloudWatchLoggingOptions:
+          Enabled: true
+          LogGroupName:
+            Ref: awskinesisfirehoseSmartFarmPUTS3DemoLJbQpihcaa0OB448FC4E
+          LogStreamName: DestinationDelivery
+        CompressionFormat: UNCOMPRESSED
+        DynamicPartitioningConfiguration:
+          Enabled: false
+          RetryOptions:
+            DurationInSeconds: 60
+        ProcessingConfiguration:
+          Enabled: true
+          Processors:
+            - Parameters:
+                - ParameterName: BufferIntervalInSeconds
+                  ParameterValue: "300"
+                - ParameterName: BufferSizeInMBs
+                  ParameterValue: "3"
+                - ParameterName: LambdaArn
+                  ParameterValue:
+                    Fn::GetAtt:
+                      - SmartFarmDataTransferLambdaHandlerC1B97CD3
+                      - Arn
+              Type: Lambda
+        RoleARN:
+          Fn::GetAtt:
+            - smartFarmPutS3DeliveryFirehoseRole91EE035B
+            - Arn
+        S3BackupMode: Disabled
+    Metadata:
+      aws:cdk:path: SiemensStack/SmartFarm-PUT-S3-Demo-LJbQpihcaa0O
+  smartFarmIOT2S3RoleBC003B3A:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: iot.amazonaws.com
+        Version: "2012-10-17"
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - firehose:PutRecord
+                  - firehose:PutRecordBatch
+                Effect: Allow
+                Resource:
+                  Fn::GetAtt:
+                    - SmartFarmPUTS3DemoLJbQpihcaa0O
+                    - Arn
+            Version: "2012-10-17"
+          PolicyName: firehosePutS3Policy
+    Metadata:
+      aws:cdk:path: SiemensStack/smartFarmIOT2S3Role/Resource
+  SmartFarmIOT2S3TopicRuleDemoLJbQpihcaa0O:
+    Type: AWS::IoT::TopicRule
+    Properties:
+      TopicRulePayload:
+        Actions:
+          - Firehose:
+              BatchMode: false
+              DeliveryStreamName: SiemensStack-SmartFarm-PUT-S3
+              RoleArn:
+                Fn::GetAtt:
+                  - smartFarmIOT2S3RoleBC003B3A
+                  - Arn
+        AwsIotSqlVersion: "2016-03-23"
+        Description: description
+        ErrorAction:
+          Republish:
+            Qos: 0
+            RoleArn:
+              Fn::GetAtt:
+                - SiteWiseTutorialDeviceRuleRole0B388303
+                - Arn
+            Topic: errormessage
+        RuleDisabled: false
+        Sql:
+          Fn::Join:
+            - ""
+            - - select * from '
+              - Ref: smartFarmTopic
+              - "'"
+    Metadata:
+      aws:cdk:path: SiemensStack/SmartFarmIOT2S3TopicRuleDemoLJbQpihcaa0O
+  SmartfarmCrawlerRole651829A6:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: glue.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSGlueServiceRole
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - s3:DeleteObject
+                  - s3:GetObject
+                  - s3:PutObject
+                Effect: Allow
+                Resource:
+                  Fn::Join:
+                    - ""
+                    - - Fn::GetAtt:
+                          - siemensindustryedgedemo614CC6A9
+                          - Arn
+                      - "*"
+                Sid: VisualEditor0
+            Version: "2012-10-17"
+          PolicyName: smartfarmS3Crawler
+    Metadata:
+      aws:cdk:path: SiemensStack/SmartfarmCrawlerRole/Resource
+  SmartFarmSmartfarmDemo:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId:
+        Ref: AWS::AccountId
+      DatabaseInput:
+        Name: smartfarm-smartfarm-demoljbqpihcaa
+    Metadata:
+      aws:cdk:path: SiemensStack/SmartFarm-SmartfarmDemo
+  SmartFarmDataCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Role:
+        Fn::GetAtt:
+          - SmartfarmCrawlerRole651829A6
+          - Arn
+      Targets:
+        S3Targets:
+          - Exclusions:
+              - processing-failed/**
+              - rawdataparquet/**
+            Path:
+              Fn::Join:
+                - ""
+                - - s3://
+                  - Ref: siemensindustryedgedemo614CC6A9
+      DatabaseName: smartfarm-smartfarm-demoljbqpihcaa
+      Description: SmartFarmDataCrawler
+      SchemaChangePolicy:
+        DeleteBehavior: LOG
+        UpdateBehavior: LOG
+      TablePrefix: rawdata_
+    Metadata:
+      aws:cdk:path: SiemensStack/SmartFarmDataCrawler
+  smartFarmDataCrawlerParquet:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Role:
+        Fn::GetAtt:
+          - SmartfarmCrawlerRole651829A6
+          - Arn
+      Targets:
+        S3Targets:
+          - Exclusions:
+              - processing-failed/**
+              - rawdataparquet/**
+            Path:
+              Fn::Join:
+                - ""
+                - - s3://
+                  - Ref: siemensindustryedgedemo614CC6A9
+                  - /rawdataparquet
+      DatabaseName: smartfarm-smartfarm-demoljbqpihcaa
+      Description: SmartFarmDataCrawlerParquet
+      SchemaChangePolicy:
+        DeleteBehavior: LOG
+        UpdateBehavior: LOG
+      TablePrefix: parquet_data_
+    Metadata:
+      aws:cdk:path: SiemensStack/smartFarmDataCrawlerParquet
+  SmartFarmThing:
+    Type: AWS::IoT::Thing
+    Properties:
+      ThingName:
+        Ref: thingName
+    Metadata:
+      aws:cdk:path: SiemensStack/SmartFarmThing
+  CreateKeysAndCertificateCustomResourcePolicyE9DC6083:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: iot:CreateKeysAndCertificate
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: CreateKeysAndCertificateCustomResourcePolicyE9DC6083
+      Roles:
+        - Ref: AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2
+    Metadata:
+      aws:cdk:path: SiemensStack/CreateKeysAndCertificate/CustomResourcePolicy/Resource
+  CreateKeysAndCertificate4D276FB5:
+    Type: Custom::AWS
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - AWS679f53fac002430cb0da5b7982bd22872D164C4C
+          - Arn
+      Create: '{"service":"Iot","action":"createKeysAndCertificate","parameters":{"setAsActive":true},"physicalResourceId":{"responsePath":"certificateId"},"outputPaths":["certificateArn","certificateId","certificatePem","keyPair.PrivateKey"]}'
+      InstallLatestAwsSdk: true
+    DependsOn:
+      - CreateKeysAndCertificateCustomResourcePolicyE9DC6083
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: SiemensStack/CreateKeysAndCertificate/Resource/Default
+  SmartFarmPolicy:
+    Type: AWS::IoT::Policy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - iot:*
+            Resource:
+              - "*"
+      PolicyName: SiemensStack-SmartFarmPolicy-JU5ZKA6SCK5R
+    Metadata:
+      aws:cdk:path: SiemensStack/SmartFarmPolicy
+  certificatePem887E651B:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Value:
+        Fn::GetAtt:
+          - CreateKeysAndCertificate4D276FB5
+          - certificatePem
+      Description: certificatePem
+      Name: /smartfarm/certificatePem
+      Tier: Advanced
+    Metadata:
+      aws:cdk:path: SiemensStack/certificatePem/Resource
+  PrivateKey98B145B1:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Value:
+        Fn::GetAtt:
+          - CreateKeysAndCertificate4D276FB5
+          - keyPair.PrivateKey
+      Description: PrivateKey
+      Name: /smartfarm/keyPair/PrivateKey
+      Tier: Advanced
+    Metadata:
+      aws:cdk:path: SiemensStack/PrivateKey/Resource
+  IoTEndpointCustomResourcePolicy603B70FC:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: iot:DescribeEndpoint
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: IoTEndpointCustomResourcePolicy603B70FC
+      Roles:
+        - Ref: AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2
+    Metadata:
+      aws:cdk:path: SiemensStack/IoTEndpoint/CustomResourcePolicy/Resource
+  IoTEndpoint9F0B923E:
+    Type: Custom::AWS
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - AWS679f53fac002430cb0da5b7982bd22872D164C4C
+          - Arn
+      Create: '{"service":"Iot","action":"describeEndpoint","physicalResourceId":{"responsePath":"endpointAddress"},"parameters":{"endpointType":"iot:Data-ATS"}}'
+      InstallLatestAwsSdk: true
+    DependsOn:
+      - IoTEndpointCustomResourcePolicy603B70FC
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: SiemensStack/IoTEndpoint/Resource/Default
+  MyCfnPolicyPrincipalAttachment:
+    Type: AWS::IoT::PolicyPrincipalAttachment
+    Properties:
+      PolicyName: SiemensStack-SmartFarmPolicy-JU5ZKA6SCK5R
+      Principal:
+        Fn::GetAtt:
+          - CreateKeysAndCertificate4D276FB5
+          - certificateArn
+    Metadata:
+      aws:cdk:path: SiemensStack/MyCfnPolicyPrincipalAttachment
+  MyCfnThingPrincipalAttachment:
+    Type: AWS::IoT::ThingPrincipalAttachment
+    Properties:
+      Principal:
+        Fn::GetAtt:
+          - CreateKeysAndCertificate4D276FB5
+          - certificateArn
+      ThingName:
+        Ref: thingName
+    Metadata:
+      aws:cdk:path: SiemensStack/MyCfnThingPrincipalAttachment
+  siemenssmartfarmdataanalysis11DD5B30:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: SiemensStack/siemens-smartfarm-data-analysis/Resource
+  sagemakerexecutionrole002C13C7:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/AmazonSageMakerFullAccess
+        - arn:aws:iam::aws:policy/service-role/AmazonPersonalizeFullAccess
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action: s3:ListBucket
+                Effect: Allow
+                Resource:
+                  - Fn::GetAtt:
+                      - siemensindustryedgedemo614CC6A9
+                      - Arn
+                  - Fn::GetAtt:
+                      - siemenssmartfarmdataanalysis11DD5B30
+                      - Arn
+              - Action:
+                  - s3:DeleteObject
+                  - s3:GetObject
+                  - s3:PutObject
+                Effect: Allow
+                Resource:
+                  - Fn::Join:
+                      - ""
+                      - - Fn::GetAtt:
+                            - siemensindustryedgedemo614CC6A9
+                            - Arn
+                        - /*
+                  - Fn::Join:
+                      - ""
+                      - - Fn::GetAtt:
+                            - siemenssmartfarmdataanalysis11DD5B30
+                            - Arn
+                        - /*
+            Version: "2012-10-17"
+          PolicyName: s3Buckets
+    Metadata:
+      aws:cdk:path: SiemensStack/sagemaker-execution-role/Resource
+  notebookinstance:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      InstanceType: ml.m5.xlarge
+      RoleArn:
+        Fn::GetAtt:
+          - sagemakerexecutionrole002C13C7
+          - Arn
+      DefaultCodeRepository: https://github.com/FrankieCheng/smartfarmdemo.git
+      VolumeSizeInGB: 30
+    Metadata:
+      aws:cdk:path: SiemensStack/notebook-instance
+Outputs:
+  IoTSiteWisePortalURL:
+    Description: IoT Sitewise Portal URL
+    Value:
+      Fn::GetAtt:
+        - smartFarmPortal
+        - PortalStartUrl
+  S3BucketName:
+    Description: The S3 bucket URL
+    Value:
+      Ref: siemensindustryedgedemo614CC6A9
+  DevicedataendpointURL:
+    Description: Device Data enpoint URL for IoT
+    Value:
+      Fn::GetAtt:
+        - IoTEndpoint9F0B923E
+        - endpointAddress
+  IoTCertificateKeyURL:
+    Description: You can copy the certificate Key value to a file
+    Value:
+      Fn::Join:
+        - ""
+        - - https://console.amazonaws.cn/systems-manager/parameters/smartfarm/certificatePem/description?region=
+          - Ref: AWS::Region
+          - "&tab=Table"
+  CertificatePrivateKeyURL:
+    Description: You can copy the private Key value to a file
+    Value:
+      Fn::Join:
+        - ""
+        - - https://console.amazonaws.cn/systems-manager/parameters/smartfarm/keyPair/PrivateKey/description?region=
+          - Ref: AWS::Region
+          - "&tab=Table"
+          
